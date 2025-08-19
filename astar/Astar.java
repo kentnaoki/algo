@@ -4,7 +4,8 @@ import java.util.Arrays;
 
 public class Astar {
     public static void main(String[] args) {
-        RandomPuzzle random = new RandomPuzzle(3);
+        int size = Integer.parseInt(args[0]);
+        RandomPuzzle random = new RandomPuzzle(size);
         int[][] puz = random.getRandomisedPuzzle();
         System.out.println(puzToString(puz));
     }
