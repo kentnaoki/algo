@@ -38,7 +38,8 @@ class RandomPuzzle {
         dirMap.put(2, new int[] { 0, -1 });
         dirMap.put(3, new int[] { 0, 1 });
 
-        for (int i = 0; i < iter; i++) {
+        int i = 0;
+        while (i < iter) {
             int move = rand.nextInt(4);
             int[] dir = dirMap.get(move);
 
@@ -51,6 +52,7 @@ class RandomPuzzle {
 
                 row = newRow;
                 col = newCol;
+                i++;
             }
         }
 
