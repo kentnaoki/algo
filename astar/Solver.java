@@ -5,13 +5,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Queue;
+import java.util.PriorityQueue;
 import java.util.Set;
 
 class Solver {
     private final Map<Integer, int[]> directionMap;
     private final Set<String> visited;
-    private final Queue<Node> queue;
+    private final PriorityQueue<Node> queue;
 
     public Solver() {
         this.directionMap = new HashMap<>();
@@ -20,7 +20,7 @@ class Solver {
         directionMap.put(2, new int[] { 0, -1 });
         directionMap.put(3, new int[] { 0, 1 });
         this.visited = new HashSet<>();
-        this.queue = new ArrayDeque<>();
+        this.queue = new PriorityQueue<>((a, b) -> a.score() - b.score());
     }
 
     public int solvePuzzle(int[][] puz, int[][] goal) {
@@ -28,7 +28,7 @@ class Solver {
         int count = 0;
         int[] zeroCor = findZero(puz);
         int puzSize = puz.length;
-        Node node = new Node(puz, zeroCor, null);
+        Node node = new Node(puz, zeroCor, null, 0, 0, calculateCost(puz));
         queue.offer(node);
         visited.add(Arrays.deepToString(node.puzzle()));
 
@@ -60,7 +60,11 @@ class Solver {
                 }
 
                 if (!visited.contains(curPuzStr)) {
-                    Node nextNode = new Node(getDeepCopy(curPuz), new int[] { newRow, newCol }, curNode);
+                    int startToN = curNode.startToN() + 1;
+                    int heuristic = calculateCost(curPuz);
+                    int score = startToN + heuristic;
+                    Node nextNode = new Node(getDeepCopy(curPuz), new int[] { newRow, newCol }, curNode, score,
+                            startToN, heuristic);
                     queue.offer(nextNode);
                     visited.add(curPuzStr);
                 }
@@ -69,6 +73,27 @@ class Solver {
         }
 
         return -1;
+    }
+
+    private int calculateCost(int[][] puz) {
+        int cost = 0;
+        int puzSize = puz.length;
+        for (int row = 0; row < puzSize; row++) {
+            for (int col = 0; col < puzSize; col++) {
+                cost += getDistToGoal(row, col, puz[row][col], puzSize);
+            }
+        }
+        return cost;
+    }
+
+    private int getDistToGoal(int row, int col, int val, int puzSize) {
+        if (val == 0) {
+            return 0;
+        }
+        int rowGoal = (val - 1) / puzSize;
+        int colGoal = (val - 1) % puzSize;
+
+        return Math.abs(rowGoal - row) + Math.abs(colGoal - col);
     }
 
     private int getPathLength(Node node) {
