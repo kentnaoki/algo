@@ -28,15 +28,12 @@ class Solver {
         int count = 0;
         int[] zeroCor = findZero(puz);
         int puzSize = puz.length;
-        Node node = new Node(puz, zeroCor);
+        Node node = new Node(puz, zeroCor, null);
         queue.offer(node);
         visited.add(Arrays.deepToString(node.puzzle()));
 
         while (!queue.isEmpty()) {
             Node curNode = queue.poll();
-            count++;
-            System.out.println("------------------------");
-            System.out.println(String.join("\n", Arrays.stream(curNode.puzzle()).map(Arrays::toString).toList()));
 
             int zeroRow = curNode.zeroCor()[0];
             int zeroCol = curNode.zeroCor()[1];
@@ -59,15 +56,28 @@ class Solver {
                 if (curPuzStr.equals(goalStr)) {
                     System.out.println("-----------GOAL-------------");
                     System.out.println(String.join("\n", Arrays.stream(curPuz).map(Arrays::toString).toList()));
-                    return count;
+                    return getPathLength(curNode);
                 }
 
                 if (!visited.contains(curPuzStr)) {
-                    Node nextNode = new Node(getDeepCopy(curPuz), new int[] { newRow, newCol });
+                    Node nextNode = new Node(getDeepCopy(curPuz), new int[] { newRow, newCol }, curNode);
                     queue.offer(nextNode);
                     visited.add(curPuzStr);
                 }
             }
+
+        }
+
+        return -1;
+    }
+
+    private int getPathLength(Node node) {
+        int count = 0;
+        while (node.parent() != null) {
+            System.out.println("------------------Move (Reverse order)-------------------------");
+            System.out.println(String.join("\n", Arrays.stream(node.puzzle()).map(Arrays::toString).toList()));
+            node = node.parent();
+            count++;
         }
 
         return count;
