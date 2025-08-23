@@ -6,11 +6,11 @@ import java.util.Map;
 import java.util.HashMap;
 
 class RandomPuzzle {
-    private int[][] puzzle;
+    private final int[][] basePuzzle;
     private final int size;
 
     public RandomPuzzle(int size) {
-        this.puzzle = generatePuzzle(size);
+        this.basePuzzle = generatePuzzle(size);
         this.size = size;
     }
 
@@ -23,13 +23,24 @@ class RandomPuzzle {
                 count++;
             }
         }
+        int row = size - 1;
+        int col = size - 1;
+        puz[row][col] = 0;
         return puz;
     }
 
+    public int[][] getBasePuzzle() {
+        return basePuzzle;
+    }
+
     public int[][] getRandomisedPuzzle() {
+        int[][] puzzle = new int[size][size];
+        for (int i = 0; i < size; i++) {
+            puzzle[i] = Arrays.copyOf(basePuzzle[i], size);
+        }
+
         int row = size - 1;
         int col = size - 1;
-        puzzle[row][col] = 0;
         Random rand = new Random();
         int iter = rand.nextInt(100);
         Map<Integer, int[]> dirMap = new HashMap<>();
