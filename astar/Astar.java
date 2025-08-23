@@ -8,9 +8,9 @@ public class Astar {
         RandomPuzzle random = new RandomPuzzle(size);
         int[][] goal = random.getBasePuzzle();
         int[][] puz = random.getRandomisedPuzzle();
-        System.out.println(puzToString(puz));
         Solver solver = new Solver();
         int count = solver.solvePuzzle(puz, goal);
+        System.out.println("----------------Total Move-----------------");
         System.out.println(count);
     }
 
