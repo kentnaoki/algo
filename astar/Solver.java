@@ -27,17 +27,18 @@ class Solver {
         this.heuristic = heuristic;
     }
 
-    public int solvePuzzle(int[][] puz, int[][] goal) {
+    public long[] solvePuzzle(int[][] puz, int[][] goal) {
         long start = System.currentTimeMillis();
         String goalStr = Arrays.deepToString(goal);
-        int count = 0;
         int[] zeroCor = findZero(puz);
         int puzSize = puz.length;
         Node node = new Node(puz, zeroCor, null, 0, 0, heuristic.getHeuristic(puz));
         queue.offer(node);
         visited.add(Arrays.deepToString(node.puzzle()));
+        int count = 0;
 
         while (!queue.isEmpty()) {
+            count++;
             Node curNode = queue.poll();
 
             int zeroRow = curNode.zeroCor()[0];
@@ -59,13 +60,17 @@ class Solver {
                 String curPuzStr = Arrays.deepToString(curPuz);
 
                 if (curPuzStr.equals(goalStr)) {
-                    System.out.println("-----------GOAL-------------");
-                    System.out.println(String.join("\n", Arrays.stream(curPuz).map(Arrays::toString).toList()));
+                    // System.out.println("-----------GOAL-------------");
+                    // System.out.println(String.join("\n",
+                    // Arrays.stream(curPuz).map(Arrays::toString).toList()));
                     long end = System.currentTimeMillis();
                     long timeElapsed = end - start;
-                    System.out.println("----------------Time Elapsed---------------");
-                    System.out.println(timeElapsed + " ms");
-                    return getPathLength(curNode);
+
+                    // System.out.println("-------------------------------");
+                    // System.out.println("Time Elapsed: " + timeElapsed + " ms");
+                    // System.out.println("Total Count: " + count);
+
+                    return new long[] { count, timeElapsed };
                 }
 
                 if (!visited.contains(curPuzStr)) {
@@ -81,11 +86,11 @@ class Solver {
 
         }
 
-        return -1;
+        return new long[] { -1, -1 };
     }
 
-    private int getPathLength(Node node) {
-        int count = 0;
+    private long getPathLength(Node node) {
+        long count = 0;
         while (node.parent() != null) {
             // System.out.println("------------------Move (Reverse
             // order)-------------------------");

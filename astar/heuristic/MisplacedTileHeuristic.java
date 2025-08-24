@@ -12,7 +12,7 @@ public class MisplacedTileHeuristic implements Heuristic {
         for (int row = 0; row < puzSize; row++) {
             for (int col = 0; col < puzSize; col++) {
                 if (isTileMisplaced(row, col, puz[row][col], puzSize)) {
-                    count++;
+                    cost++;
                 }
             }
         }
