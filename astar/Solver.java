@@ -8,12 +8,15 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 
+import astar.heuristic.Heuristic;
+
 class Solver {
     private final Map<Integer, int[]> directionMap;
     private final Set<String> visited;
     private final PriorityQueue<Node> queue;
+    private final Heuristic heuristic;
 
-    public Solver() {
+    public Solver(Heuristic heuristic) {
         this.directionMap = new HashMap<>();
         directionMap.put(0, new int[] { -1, 0 });
         directionMap.put(1, new int[] { 1, 0 });
@@ -21,18 +24,21 @@ class Solver {
         directionMap.put(3, new int[] { 0, 1 });
         this.visited = new HashSet<>();
         this.queue = new PriorityQueue<>((a, b) -> a.score() - b.score());
+        this.heuristic = heuristic;
     }
 
-    public int solvePuzzle(int[][] puz, int[][] goal) {
+    public long[] solvePuzzle(int[][] puz, int[][] goal) {
+        long start = System.currentTimeMillis();
         String goalStr = Arrays.deepToString(goal);
-        int count = 0;
         int[] zeroCor = findZero(puz);
         int puzSize = puz.length;
-        Node node = new Node(puz, zeroCor, null, 0, 0, calculateCost(puz));
+        Node node = new Node(puz, zeroCor, null, 0, 0, heuristic.getHeuristic(puz));
         queue.offer(node);
         visited.add(Arrays.deepToString(node.puzzle()));
+        int count = 0;
 
         while (!queue.isEmpty()) {
+            count++;
             Node curNode = queue.poll();
 
             int zeroRow = curNode.zeroCor()[0];
@@ -54,17 +60,25 @@ class Solver {
                 String curPuzStr = Arrays.deepToString(curPuz);
 
                 if (curPuzStr.equals(goalStr)) {
-                    System.out.println("-----------GOAL-------------");
-                    System.out.println(String.join("\n", Arrays.stream(curPuz).map(Arrays::toString).toList()));
-                    return getPathLength(curNode);
+                    // System.out.println("-----------GOAL-------------");
+                    // System.out.println(String.join("\n",
+                    // Arrays.stream(curPuz).map(Arrays::toString).toList()));
+                    long end = System.currentTimeMillis();
+                    long timeElapsed = end - start;
+
+                    // System.out.println("-------------------------------");
+                    // System.out.println("Time Elapsed: " + timeElapsed + " ms");
+                    // System.out.println("Total Count: " + count);
+
+                    return new long[] { count, timeElapsed };
                 }
 
                 if (!visited.contains(curPuzStr)) {
                     int startToN = curNode.startToN() + 1;
-                    int heuristic = calculateCost(curPuz);
-                    int score = startToN + heuristic;
+                    int heuristicCost = heuristic.getHeuristic(curPuz);
+                    int score = startToN + heuristicCost;
                     Node nextNode = new Node(getDeepCopy(curPuz), new int[] { newRow, newCol }, curNode, score,
-                            startToN, heuristic);
+                            startToN, heuristicCost);
                     queue.offer(nextNode);
                     visited.add(curPuzStr);
                 }
@@ -72,35 +86,16 @@ class Solver {
 
         }
 
-        return -1;
+        return new long[] { -1, -1 };
     }
 
-    private int calculateCost(int[][] puz) {
-        int cost = 0;
-        int puzSize = puz.length;
-        for (int row = 0; row < puzSize; row++) {
-            for (int col = 0; col < puzSize; col++) {
-                cost += getDistToGoal(row, col, puz[row][col], puzSize);
-            }
-        }
-        return cost;
-    }
-
-    private int getDistToGoal(int row, int col, int val, int puzSize) {
-        if (val == 0) {
-            return 0;
-        }
-        int rowGoal = (val - 1) / puzSize;
-        int colGoal = (val - 1) % puzSize;
-
-        return Math.abs(rowGoal - row) + Math.abs(colGoal - col);
-    }
-
-    private int getPathLength(Node node) {
-        int count = 0;
+    private long getPathLength(Node node) {
+        long count = 0;
         while (node.parent() != null) {
-            System.out.println("------------------Move (Reverse order)-------------------------");
-            System.out.println(String.join("\n", Arrays.stream(node.puzzle()).map(Arrays::toString).toList()));
+            // System.out.println("------------------Move (Reverse
+            // order)-------------------------");
+            // System.out.println(String.join("\n",
+            // Arrays.stream(node.puzzle()).map(Arrays::toString).toList()));
             node = node.parent();
             count++;
         }

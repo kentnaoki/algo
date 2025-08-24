@@ -1,17 +1,42 @@
 package astar;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+
+import astar.heuristic.Heuristic;
+import astar.heuristic.HeuristicFactory;
+import astar.heuristic.ManhattanHeuristic;
+import astar.heuristic.NoHeuristic;
 
 public class Astar {
     public static void main(String[] args) {
         int size = Integer.parseInt(args[0]);
+        int sampleSize = Integer.parseInt(args[1]);
+        String heuristicType = args[2];
+
         RandomPuzzle random = new RandomPuzzle(size);
         int[][] goal = random.getBasePuzzle();
-        int[][] puz = random.getRandomisedPuzzle();
-        Solver solver = new Solver();
-        int count = solver.solvePuzzle(puz, goal);
-        System.out.println("----------------Total Move-----------------");
-        System.out.println(count);
+        Heuristic heuristic = HeuristicFactory.getHeuristic(heuristicType);
+
+        long totalNodes = 0;
+        long totalTimeMs = 0;
+
+        for (int i = 0; i < sampleSize; i++) {
+            int[][] puz = random.getRandomisedPuzzle();
+            Solver solver = new Solver(heuristic);
+            long[] result = solver.solvePuzzle(puz, goal);
+
+            totalNodes += result[0];
+            totalTimeMs += result[1];
+        }
+
+        double totalTimeSeconds = totalTimeMs / 1000.0;
+        double average = totalNodes / totalTimeSeconds;
+
+        System.out.println("-------------------------------");
+        System.out.println((int) average + " Nodes/second");
+
     }
 
     private static String puzToString(int[][] puzzle) {
