@@ -2,16 +2,25 @@ package astar;
 
 import java.util.Arrays;
 
+import astar.heuristic.ManhattanHeuristic;
+import astar.heuristic.NoHeuristic;
+
 public class Astar {
     public static void main(String[] args) {
         int size = Integer.parseInt(args[0]);
+        int sampleSize = Integer.parseInt(args[1]);
+
         RandomPuzzle random = new RandomPuzzle(size);
         int[][] goal = random.getBasePuzzle();
-        int[][] puz = random.getRandomisedPuzzle();
-        Solver solver = new Solver();
-        int count = solver.solvePuzzle(puz, goal);
-        System.out.println("----------------Total Move-----------------");
-        System.out.println(count);
+
+        for (int i = 0; i < sampleSize; i++) {
+            int[][] puz = random.getRandomisedPuzzle();
+            Solver solver = new Solver(new NoHeuristic());
+            int count = solver.solvePuzzle(puz, goal);
+            System.out.println("----------------Total Move-----------------");
+            System.out.println(count);
+        }
+
     }
 
     private static String puzToString(int[][] puzzle) {
