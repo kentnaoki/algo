@@ -9,29 +9,47 @@ public class MisplacedTileHeuristic implements Heuristic {
     }
 
     @Override
-    public int getHeuristic(int[] puz) {
-        int cost = 0;
-        int puzSize = puz.length;
-        for (int i = 0; i < puzSize; i++) {
-            int val = puz[i];
-            int row = i / size;
-            int col = i % size;
-            int rowGoal = (val - 1) / puzSize;
-            int colGoal = (val - 1) % puzSize;
+    public int getHeuristic(int[] state) {
+        int h = 0;
+        for (int i = 0; i < state.length; i++) {
+            int val = state[i];
+            if (val == 0) {
+                continue;
+            }
+            int row = idx / size;
+            int col = idx % size;
+            int rowGoal = (val - 1) / size;
+            int colGoal = (val - 1) % size;
 
-            if (isTileMisplaced(row, col, rowGoal, colGoal, val)) {
-                cost++;
+            if (row == rowGoal || col == colGoal) {
+                h++;
             }
         }
-        return cost;
-
+        return h;
     }
 
-    private boolean isTileMisplaced(int row, int col, int rowGoal, int colGoal, int val) {
-        if (val == 0) {
-            return row == size - 1 && col == size - 1;
-        }
+    @Override
+    public int updateHeuristic(int oldH, int val, int oldIdx, int newIdx) {
+        if (val == 0)
+            return oldH;
 
-        return row == rowGoal && col == colGoal;
+        int oldRow = oldIdx / size;
+        int oldCol = oldIdx % size;
+        int newRow = newIdx / size;
+        int newCol = newIdx % size;
+
+        int goalRow = (val - 1) / size;
+        int goalCol = (val - 1) % size;
+
+        boolean wasMisplaced = (oldRow != goalRow || oldCol != goalCol);
+        boolean nowMisplaced = (newRow != goalRow || newCol != goalCol);
+
+        if (wasMisplaced && !nowMisplaced) {
+            return oldH - 1;
+        } else if (!wasMisplaced && nowMisplaced) {
+            return oldH + 1;
+        } else {
+            return oldH;
+        }
     }
 }

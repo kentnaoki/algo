@@ -48,6 +48,10 @@ class Solver {
             Node curNode = openList.poll();
             Long key = encoder.encode(curNode.puzzle());
 
+            if (closedList.containsKey(key) && curNode.startToN() > closedList.get(key)) {
+                continue;
+            }
+
             closedList.put(key, curNode.startToN());
 
             int zeroRow = curNode.zeroCor()[0];
@@ -65,6 +69,7 @@ class Solver {
 
                 int zeroIdx = zeroRow * puzSize + zeroCol;
                 int newIdx = newRow * puzSize + newCol;
+                int val = curPuz[newIdx];
                 curPuz[zeroIdx] = curPuz[newIdx];
                 curPuz[newIdx] = 0;
 
@@ -77,7 +82,7 @@ class Solver {
                 }
 
                 int startToN = curNode.startToN() + 1;
-                int heuristicCost = heuristic.getHeuristic(curPuz);
+                int heuristicCost = heuristic.updateHeuristic(curNode.heuristic(), val, newIdx, zeroIdx);
                 int score = startToN + heuristicCost;
 
                 Node nextNode = new Node(getDeepCopy(curPuz), new int[] { newRow, newCol }, curNode, score, startToN,
