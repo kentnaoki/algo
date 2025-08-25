@@ -12,29 +12,25 @@ public class LongEncoder implements Encoder {
     }
 
     @Override
-    public long encode(int[][] puzzle) {
-        if (puzzle.length != size) {
+    public long encode(int[] puzzle) {
+        if (puzzle.length != size * size) {
             throw new RuntimeException("Invalid puzzle size");
         }
         long code = 0;
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                code <<= 4;
-                code |= puzzle[i][j] & 0xF;
-            }
+        for (int i = 0; i < size * size; i++) {
+            code <<= 4;
+            code |= puzzle[i] & 0xF;
         }
 
         return code;
     }
 
     @Override
-    public int[][] decode(long code) {
-        int[][] board = new int[size][size];
+    public int[] decode(long code) {
+        int[] board = new int[size * size];
         for (int i = size - 1; i >= 0; i--) {
-            for (int j = size - 1; j >= 0; j--) {
-                board[i][j] = (int) (code & 0xF);
-                code >>= 4;
-            }
+            board[i] = (int) (code & 0xF);
+            code >>= 4;
         }
         return board;
     }

@@ -18,7 +18,7 @@ public class Astar {
 
         RandomPuzzle random = new RandomPuzzle(size);
         int[][] goal = random.getBasePuzzle();
-        Heuristic heuristic = HeuristicFactory.getHeuristic(heuristicType);
+        Heuristic heuristic = HeuristicFactory.getHeuristic(heuristicType, size);
 
         long totalNodes = 0;
         long totalTimeMs = 0;

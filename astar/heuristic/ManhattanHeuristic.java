@@ -2,28 +2,27 @@ package astar.heuristic;
 
 public class ManhattanHeuristic implements Heuristic {
 
-    public ManhattanHeuristic() {
+    private final int size;
+
+    public ManhattanHeuristic(int size) {
+        this.size = size;
     }
 
     @Override
-    public int getHeuristic(int[][] puz) {
+    public int getHeuristic(int[] puz) {
         int cost = 0;
-        int puzSize = puz.length;
-        for (int row = 0; row < puzSize; row++) {
-            for (int col = 0; col < puzSize; col++) {
-                cost += getDistToGoal(row, col, puz[row][col], puzSize);
+
+        for (int i = 0; i < puz.length; i++) {
+            int val = puz[i];
+            if (val != 0) {
+                int row = i / size;
+                int col = i % size;
+                int rowGoal = (val - 1) / size;
+                int colGoal = (val - 1) % size;
+                cost += Math.abs(rowGoal - row) + Math.abs(colGoal - col);
             }
         }
         return cost;
     }
 
-    private int getDistToGoal(int row, int col, int val, int puzSize) {
-        if (val == 0) {
-            return 0;
-        }
-        int rowGoal = (val - 1) / puzSize;
-        int colGoal = (val - 1) % puzSize;
-
-        return Math.abs(rowGoal - row) + Math.abs(colGoal - col);
-    }
 }

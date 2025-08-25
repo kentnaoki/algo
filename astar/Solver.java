@@ -34,10 +34,12 @@ class Solver {
 
     public long[] solvePuzzle(int[][] puz, int[][] goal) {
         long start = System.currentTimeMillis();
-        Long encodedGoal = encoder.encode(goal);
+        int[] goal1d = arrayTo1d(goal);
+        Long encodedGoal = encoder.encode(goal1d);
         int[] zeroCor = findZero(puz);
         int puzSize = puz.length;
-        Node node = new Node(puz, zeroCor, null, 0, 0, heuristic.getHeuristic(puz));
+        int[] puz1d = arrayTo1d(puz);
+        Node node = new Node(puz1d, zeroCor, null, 0, 0, heuristic.getHeuristic(puz1d));
         openList.offer(node);
         int expanded = 0;
 
@@ -55,11 +57,13 @@ class Solver {
                 int newRow = zeroRow + dir[0];
                 int newCol = zeroCol + dir[1];
 
-                int[][] curPuz = getDeepCopy(curNode.puzzle());
+                int[] curPuz = getDeepCopy(curNode.puzzle());
 
                 if (newRow >= 0 && newRow < puzSize && newCol >= 0 && newCol < puzSize) {
-                    curPuz[zeroRow][zeroCol] = curPuz[newRow][newCol];
-                    curPuz[newRow][newCol] = 0;
+                    int zeroIdx = zeroRow * puzSize + zeroCol;
+                    int newIdx = newRow * puzSize + newCol;
+                    curPuz[zeroIdx] = curPuz[newIdx];
+                    curPuz[newIdx] = 0;
                 }
 
                 Long encodedCurPuz = encoder.encode(curPuz);
@@ -88,18 +92,17 @@ class Solver {
         return new long[] { -1, -1 };
     }
 
-    private long getPathLength(Node node) {
-        long count = 0;
-        while (node.parent() != null) {
-            // System.out.println("------------------Move (Reverse
-            // order)-------------------------");
-            // System.out.println(String.join("\n",
-            // Arrays.stream(node.puzzle()).map(Arrays::toString).toList()));
-            node = node.parent();
-            count++;
-        }
+    private int[] arrayTo1d(int[][] puz) {
+        int newSize = puz.length * puz.length;
+        int[] copy = new int[newSize];
 
-        return count;
+        for (int row = 0; row < puz.length; row++) {
+            for (int col = 0; col < puz.length; col++) {
+                int index = row * puz.length + col;
+                copy[index] = puz[row][col];
+            }
+        }
+        return copy;
     }
 
     private int[] findZero(int[][] puz) {
@@ -113,11 +116,7 @@ class Solver {
         return new int[] { 0, 0 };
     }
 
-    private int[][] getDeepCopy(int[][] arr) {
-        int[][] copy = new int[arr.length][];
-        for (int i = 0; i < arr.length; i++) {
-            copy[i] = arr[i].clone();
-        }
-        return copy;
+    private int[] getDeepCopy(int[] arr) {
+        return Arrays.copyOf(arr, arr.length);
     }
 }

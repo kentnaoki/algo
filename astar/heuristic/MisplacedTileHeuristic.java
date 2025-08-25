@@ -2,29 +2,35 @@ package astar.heuristic;
 
 public class MisplacedTileHeuristic implements Heuristic {
 
-    public MisplacedTileHeuristic() {
+    private final int size;
+
+    public MisplacedTileHeuristic(int size) {
+        this.size = size;
     }
 
     @Override
-    public int getHeuristic(int[][] puz) {
+    public int getHeuristic(int[] puz) {
         int cost = 0;
         int puzSize = puz.length;
-        for (int row = 0; row < puzSize; row++) {
-            for (int col = 0; col < puzSize; col++) {
-                if (isTileMisplaced(row, col, puz[row][col], puzSize)) {
-                    cost++;
-                }
+        for (int i = 0; i < puzSize; i++) {
+            int val = puz[i];
+            int row = i / size;
+            int col = i % size;
+            int rowGoal = (val - 1) / puzSize;
+            int colGoal = (val - 1) % puzSize;
+
+            if (isTileMisplaced(row, col, rowGoal, colGoal, val)) {
+                cost++;
             }
         }
         return cost;
+
     }
 
-    private boolean isTileMisplaced(int row, int col, int val, int puzSize) {
+    private boolean isTileMisplaced(int row, int col, int rowGoal, int colGoal, int val) {
         if (val == 0) {
-            return row == puzSize - 1 && col == puzSize - 1;
+            return row == size - 1 && col == size - 1;
         }
-        int rowGoal = (val - 1) / puzSize;
-        int colGoal = (val - 1) % puzSize;
 
         return row == rowGoal && col == colGoal;
     }
