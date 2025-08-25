@@ -1,52 +1,57 @@
 package astar;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 
+import astar.encoder.Encoder;
 import astar.heuristic.Heuristic;
 
 class Solver {
-    private final Map<Integer, int[]> directionMap;
-    private final Set<String> visited;
-    private final PriorityQueue<Node> queue;
+    private final List<int[]> direction;
+    private final PriorityQueue<Node> openList;
+    private final Map<Long, Integer> closedList;
     private final Heuristic heuristic;
+    private final Encoder encoder;
 
-    public Solver(Heuristic heuristic) {
-        this.directionMap = new HashMap<>();
-        directionMap.put(0, new int[] { -1, 0 });
-        directionMap.put(1, new int[] { 1, 0 });
-        directionMap.put(2, new int[] { 0, -1 });
-        directionMap.put(3, new int[] { 0, 1 });
-        this.visited = new HashSet<>();
-        this.queue = new PriorityQueue<>((a, b) -> a.score() - b.score());
+    public Solver(Heuristic heuristic, Encoder encoder) {
+        this.direction = new ArrayList<>();
+        direction.add(new int[] { -1, 0 });
+        direction.add(new int[] { 1, 0 });
+        direction.add(new int[] { 0, -1 });
+        direction.add(new int[] { 0, 1 });
+        this.openList = new PriorityQueue<>((a, b) -> a.score() - b.score());
+        this.closedList = new HashMap<>();
         this.heuristic = heuristic;
+        this.encoder = encoder;
     }
 
     public long[] solvePuzzle(int[][] puz, int[][] goal) {
         long start = System.currentTimeMillis();
-        String goalStr = Arrays.deepToString(goal);
+        Long encodedGoal = encoder.encode(goal);
         int[] zeroCor = findZero(puz);
         int puzSize = puz.length;
         Node node = new Node(puz, zeroCor, null, 0, 0, heuristic.getHeuristic(puz));
-        queue.offer(node);
-        visited.add(Arrays.deepToString(node.puzzle()));
-        int count = 0;
+        openList.offer(node);
+        int expanded = 0;
 
-        while (!queue.isEmpty()) {
-            count++;
-            Node curNode = queue.poll();
+        while (!openList.isEmpty()) {
+            expanded++;
+            Node curNode = openList.poll();
+            Long key = encoder.encode(curNode.puzzle());
+
+            closedList.put(key, curNode.startToN());
 
             int zeroRow = curNode.zeroCor()[0];
             int zeroCol = curNode.zeroCor()[1];
 
-            for (Map.Entry<Integer, int[]> entry : directionMap.entrySet()) {
-                int[] dir = entry.getValue();
-                int index = entry.getKey();
+            for (int[] dir : direction) {
                 int newRow = zeroRow + dir[0];
                 int newCol = zeroCol + dir[1];
 
@@ -57,30 +62,24 @@ class Solver {
                     curPuz[newRow][newCol] = 0;
                 }
 
-                String curPuzStr = Arrays.deepToString(curPuz);
+                Long encodedCurPuz = encoder.encode(curPuz);
 
-                if (curPuzStr.equals(goalStr)) {
-                    // System.out.println("-----------GOAL-------------");
-                    // System.out.println(String.join("\n",
-                    // Arrays.stream(curPuz).map(Arrays::toString).toList()));
+                if (encodedCurPuz.equals(encodedGoal)) {
                     long end = System.currentTimeMillis();
                     long timeElapsed = end - start;
-
-                    // System.out.println("-------------------------------");
-                    // System.out.println("Time Elapsed: " + timeElapsed + " ms");
-                    // System.out.println("Total Count: " + count);
-
-                    return new long[] { count, timeElapsed };
+                    return new long[] { expanded, timeElapsed };
                 }
 
-                if (!visited.contains(curPuzStr)) {
-                    int startToN = curNode.startToN() + 1;
-                    int heuristicCost = heuristic.getHeuristic(curPuz);
-                    int score = startToN + heuristicCost;
-                    Node nextNode = new Node(getDeepCopy(curPuz), new int[] { newRow, newCol }, curNode, score,
-                            startToN, heuristicCost);
-                    queue.offer(nextNode);
-                    visited.add(curPuzStr);
+                int startToN = curNode.startToN() + 1;
+                int heuristicCost = heuristic.getHeuristic(curPuz);
+                int score = startToN + heuristicCost;
+
+                Node nextNode = new Node(getDeepCopy(curPuz), new int[] { newRow, newCol }, curNode, score, startToN,
+                        heuristicCost);
+
+                if (!closedList.containsKey(encodedCurPuz) || startToN < closedList.get(encodedCurPuz)) {
+                    closedList.put(encodedCurPuz, startToN);
+                    openList.offer(nextNode);
                 }
             }
 
