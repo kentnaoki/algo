@@ -59,12 +59,14 @@ class Solver {
 
                 int[] curPuz = getDeepCopy(curNode.puzzle());
 
-                if (newRow >= 0 && newRow < puzSize && newCol >= 0 && newCol < puzSize) {
-                    int zeroIdx = zeroRow * puzSize + zeroCol;
-                    int newIdx = newRow * puzSize + newCol;
-                    curPuz[zeroIdx] = curPuz[newIdx];
-                    curPuz[newIdx] = 0;
+                if (newRow < 0 || newRow >= puzSize || newCol < 0 || newCol >= puzSize) {
+                    continue;
                 }
+
+                int zeroIdx = zeroRow * puzSize + zeroCol;
+                int newIdx = newRow * puzSize + newCol;
+                curPuz[zeroIdx] = curPuz[newIdx];
+                curPuz[newIdx] = 0;
 
                 Long encodedCurPuz = encoder.encode(curPuz);
 
