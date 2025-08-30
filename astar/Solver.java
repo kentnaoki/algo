@@ -61,7 +61,7 @@ class Solver {
                 int newRow = zeroRow + dir[0];
                 int newCol = zeroCol + dir[1];
 
-                int[] curPuz = getDeepCopy(curNode.puzzle());
+                int[] curPuz = curNode.puzzle();
 
                 if (newRow < 0 || newRow >= puzSize || newCol < 0 || newCol >= puzSize) {
                     continue;
@@ -70,12 +70,13 @@ class Solver {
                 int zeroIdx = zeroRow * puzSize + zeroCol;
                 int newIdx = newRow * puzSize + newCol;
                 int val = curPuz[newIdx];
+                int tmp = curPuz[zeroIdx];
                 curPuz[zeroIdx] = curPuz[newIdx];
-                curPuz[newIdx] = 0;
+                curPuz[newIdx] = tmp;
 
                 Long encodedCurPuz = encoder.encode(curPuz);
 
-                if (encodedCurPuz.equals(encodedGoal)) {
+                if (expanded == 1000000 || encodedCurPuz.equals(encodedGoal)) {
                     long end = System.currentTimeMillis();
                     long timeElapsed = end - start;
                     return new long[] { expanded, timeElapsed };
@@ -92,6 +93,10 @@ class Solver {
                     closedList.put(encodedCurPuz, startToN);
                     openList.offer(nextNode);
                 }
+
+                tmp = curPuz[zeroIdx];
+                curPuz[zeroIdx] = curPuz[newIdx];
+                curPuz[newIdx] = tmp;
             }
 
         }
