@@ -6,7 +6,12 @@ public class NoHeuristic implements Heuristic {
     }
 
     @Override
-    public int getHeuristic(int[][] puz) {
+    public int getHeuristic(int[] state) {
+        return 0;
+    }
+
+    @Override
+    public int updateHeuristic(int oldH, int val, int oldIdx, int newIdx) {
         return 0;
     }
 }

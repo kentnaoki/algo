@@ -2,30 +2,54 @@ package astar.heuristic;
 
 public class MisplacedTileHeuristic implements Heuristic {
 
-    public MisplacedTileHeuristic() {
+    private final int size;
+
+    public MisplacedTileHeuristic(int size) {
+        this.size = size;
     }
 
     @Override
-    public int getHeuristic(int[][] puz) {
-        int cost = 0;
-        int puzSize = puz.length;
-        for (int row = 0; row < puzSize; row++) {
-            for (int col = 0; col < puzSize; col++) {
-                if (isTileMisplaced(row, col, puz[row][col], puzSize)) {
-                    cost++;
-                }
+    public int getHeuristic(int[] state) {
+        int h = 0;
+        for (int i = 0; i < state.length; i++) {
+            int val = state[i];
+            if (val == 0) {
+                continue;
+            }
+            int row = idx / size;
+            int col = idx % size;
+            int rowGoal = (val - 1) / size;
+            int colGoal = (val - 1) % size;
+
+            if (row == rowGoal || col == colGoal) {
+                h++;
             }
         }
-        return cost;
+        return h;
     }
 
-    private boolean isTileMisplaced(int row, int col, int val, int puzSize) {
-        if (val == 0) {
-            return row == puzSize - 1 && col == puzSize - 1;
-        }
-        int rowGoal = (val - 1) / puzSize;
-        int colGoal = (val - 1) % puzSize;
+    @Override
+    public int updateHeuristic(int oldH, int val, int oldIdx, int newIdx) {
+        if (val == 0)
+            return oldH;
 
-        return row == rowGoal && col == colGoal;
+        int oldRow = oldIdx / size;
+        int oldCol = oldIdx % size;
+        int newRow = newIdx / size;
+        int newCol = newIdx % size;
+
+        int goalRow = (val - 1) / size;
+        int goalCol = (val - 1) % size;
+
+        boolean wasMisplaced = (oldRow != goalRow || oldCol != goalCol);
+        boolean nowMisplaced = (newRow != goalRow || newCol != goalCol);
+
+        if (wasMisplaced && !nowMisplaced) {
+            return oldH - 1;
+        } else if (!wasMisplaced && nowMisplaced) {
+            return oldH + 1;
+        } else {
+            return oldH;
+        }
     }
 }

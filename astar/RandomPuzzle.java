@@ -42,7 +42,7 @@ class RandomPuzzle {
         int row = size - 1;
         int col = size - 1;
         Random rand = new Random();
-        int iter = rand.nextInt(100);
+        int iter = rand.nextInt(10000);
         Map<Integer, int[]> dirMap = new HashMap<>();
         dirMap.put(0, new int[] { -1, 0 });
         dirMap.put(1, new int[] { 1, 0 });

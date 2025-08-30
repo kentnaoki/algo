@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import astar.encoder.LongEncoder;
 import astar.heuristic.Heuristic;
 import astar.heuristic.HeuristicFactory;
 import astar.heuristic.ManhattanHeuristic;
@@ -17,14 +18,14 @@ public class Astar {
 
         RandomPuzzle random = new RandomPuzzle(size);
         int[][] goal = random.getBasePuzzle();
-        Heuristic heuristic = HeuristicFactory.getHeuristic(heuristicType);
+        Heuristic heuristic = HeuristicFactory.getHeuristic(heuristicType, size);
 
         long totalNodes = 0;
         long totalTimeMs = 0;
 
         for (int i = 0; i < sampleSize; i++) {
             int[][] puz = random.getRandomisedPuzzle();
-            Solver solver = new Solver(heuristic);
+            Solver solver = new Solver(heuristic, new LongEncoder(size));
             long[] result = solver.solvePuzzle(puz, goal);
 
             totalNodes += result[0];
