@@ -14,7 +14,7 @@ import sudokuboards.SudokuBoards;
 public class BackTrack {
     public static void main(String[] args) {
         String inferenceType = args[0];
-        if (!inferenceType.equals("1") && !inferenceType.equals("2")) {
+        if (!inferenceType.equals("1") || !inferenceType.equals("2")) {
             throw new RuntimeException("Invalid inference type");
         }
 
@@ -70,7 +70,6 @@ public class BackTrack {
                 .orElseThrow(() -> new RuntimeException("empty unassignedVar"));
 
         for (int value : orderDomainValue(csp, unassignedVar, assignment)) {
-            System.out.println(unassignedVar);
             if (csp.isConsistent(unassignedVar, value, assignment)) {
                 assignment.put(unassignedVar, value);
                 var inferences = inference.inference(csp, unassignedVar, assignment);
@@ -198,7 +197,7 @@ class ForwardPropagationInference implements Inference {
         Set<String> neighbors = new HashSet<>();
         for (Constraint constraint : csp.constraints.get(var)) {
             if (constraint instanceof SudokuConstraint sc) {
-                String neighbor = sc.getVar1().equals(var) ? sc.getVar1() : sc.getVar2();
+                String neighbor = sc.ge.equals(var) ? sc.getVar1() : sc.getVar2();
                 neighbors.add(neighbor);
             }
         }
