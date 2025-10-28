@@ -16,7 +16,7 @@ public class BackTrack {
     }
 
     private Map<String, Integer> backtrackSearch(Csp csp) {
-
+        return backtrack(csp, new HashMap<>());
     }
 
     private Map<String, Integer> backtrack(Csp csp, Map<String, Integer> assignment) {
@@ -30,13 +30,13 @@ public class BackTrack {
             if (csp.isConsistent(unassignedVar, value, assignment)) {
                 assignment.put(unassignedVar, value);
                 var inferences = inference(csp, unassignedVar, assignment);
-                if (inferences is not failure) {
-                    assignment.putAll(assignment);
+                if (inferences.isPresent()) {
+                    assignment.putAll(inferences.get());
                     var result = backtrack(csp, assignment);
-                    if (result is not failure) {
+                    if (result != null) {
                         return result;
                     }
-                    for (String key : inferences.keySet()) {
+                    for (String key : inferences.get().keySet()) {
                         assignment.remove(key);
                     }
 
@@ -44,7 +44,7 @@ public class BackTrack {
                 assignment.remove(unassignedVar);
             }
         }
-        return assignment;
+        return null;
 
     }
 
@@ -61,8 +61,8 @@ public class BackTrack {
         return csp.domains.get(var);
     }
 
-    private Map<String, Integer> inference(Csp csp, String unassignedVar, Map<String, Integer> assignment) {
-        return new HashMap<>();
+    private Optional<Map<String, Integer>> inference(Csp csp, String unassignedVar, Map<String, Integer> assignment) {
+        return Optional.empty();
     }
 
     private boolean isValid(int[][] board, int row, int col) {
@@ -84,15 +84,15 @@ public class BackTrack {
 private class Csp {
     List<String> variables;
     Map<String, List<Integer>> domains;
-    Map<String, List<Constraints>> constraints;
+    Map<String, List<Constraint>> constraints;
 
     public boolean isConsistent(String variable, int value, Map<String, Integer> assignment) {
         for (Constraint c : constraints.get(variable)) {
             if (!c.isSatisfied(assignment, variable, value)) {
                 return false;
             }
-            return true;
         }
+        return true;
     }
 }
 
