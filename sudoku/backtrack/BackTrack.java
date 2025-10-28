@@ -28,26 +28,16 @@ public class BackTrack {
         System.out.println("hello");
         int[][] board = SudokuBoards.board1;
         System.out.println(print(board));
+        long start = System.currentTimeMillis();
         var result = backtrackSearch(createSudokuCsp(board), inference);
+        long end = System.currentTimeMillis();
+        long elapsed = end - start;
+        System.out.println(elapsed + " ms");
         System.out.println(result);
     }
 
     private static String print(int[][] board) {
         return String.join("\n", Arrays.stream(board).map(Arrays::toString).toList());
-    }
-
-    private static Map<String, Integer> getInitialAssignment(int[][] board) {
-        Map<String, Integer> assignment = new HashMap<>();
-        for (int r = 0; r < 9; r++) {
-            for (int c = 0; c < 9; c++) {
-                String var = String.valueOf((char) ('A' + r)) + (c + 1);
-                int value = board[r][c];
-                if (value != 0) {
-                    assignment.put(var, value);
-                }
-            }
-        }
-        return assignment;
     }
 
     private static Map<String, Integer> backtrackSearch(Csp csp, Inference inference) {
@@ -71,6 +61,11 @@ public class BackTrack {
 
         for (int value : orderDomainValue(csp, unassignedVar, assignment)) {
             if (csp.isConsistent(unassignedVar, value, assignment)) {
+                Map<String, List<Integer>> savedDomains = new HashMap<>();
+                for (var e : csp.domains.entrySet()) {
+                    savedDomains.put(e.getKey(), new ArrayList<>(e.getValue()));
+                }
+
                 assignment.put(unassignedVar, value);
                 var inferences = inference.inference(csp, unassignedVar, assignment);
                 if (inferences.isPresent()) {
@@ -79,11 +74,15 @@ public class BackTrack {
                     if (result != null) {
                         return result;
                     }
+
+                    csp.domains = savedDomains;
                     for (String key : inferences.get().keySet()) {
                         assignment.remove(key);
                     }
 
                 }
+
+                csp.domains = savedDomains;
                 assignment.remove(unassignedVar);
             }
         }
@@ -92,12 +91,21 @@ public class BackTrack {
     }
 
     private static Optional<String> selectUnassignedVar(Csp csp, Map<String, Integer> assignment) {
+        String mrv = null;
+        int smallestDomain = Integer.MAX_VALUE;
+
         for (String var : csp.variables) {
-            if (!assignment.containsKey(var)) {
-                return Optional.of(var);
+            if (assignment.containsKey(var)) {
+                continue;
+            }
+            int size = csp.domains.get(var).size();
+
+            if (size < smallestDomain) {
+                smallestDomain = size;
+                mrv = var;
             }
         }
-        return Optional.empty();
+        return Optional.ofNullable(mrv);
     }
 
     private static List<Integer> orderDomainValue(Csp csp, String var, Map<String, Integer> assignment) {
