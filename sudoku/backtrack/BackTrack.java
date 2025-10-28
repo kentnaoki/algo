@@ -197,7 +197,7 @@ class ForwardPropagationInference implements Inference {
         Set<String> neighbors = new HashSet<>();
         for (Constraint constraint : csp.constraints.get(var)) {
             if (constraint instanceof SudokuConstraint sc) {
-                String neighbor = sc.getVar1().equals(var) ? sc.getVar1() : sc.getVar2();
+                String neighbor = sc.getVar1().equals(var) ? sc.getVar2() : sc.getVar1();
                 neighbors.add(neighbor);
             }
         }
