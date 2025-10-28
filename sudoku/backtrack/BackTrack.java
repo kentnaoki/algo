@@ -13,10 +13,15 @@ import sudokuboards.SudokuBoards;
 
 public class BackTrack {
     public static void main(String[] args) {
+        if (!args[0].equals(String.valueOf(1))) {
+            throw new RuntimeException("Invalid inference type");
+        }
+
+        Inference inference = new BacktrackOnlyInference();
         System.out.println("hello");
         int[][] board = SudokuBoards.board1;
         System.out.println(print(board));
-        var result = backtrackSearch(createSudokuCsp(board));
+        var result = backtrackSearch(createSudokuCsp(board), inference);
         System.out.println(result);
     }
 
@@ -38,7 +43,7 @@ public class BackTrack {
         return assignment;
     }
 
-    private static Map<String, Integer> backtrackSearch(Csp csp) {
+    private static Map<String, Integer> backtrackSearch(Csp csp, Inference inference) {
         Map<String, Integer> initialAssignment = new HashMap<>();
         for (String var : csp.variables) {
             List<Integer> domain = csp.domains.get(var);
@@ -46,10 +51,10 @@ public class BackTrack {
                 initialAssignment.put(var, domain.get(0));
             }
         }
-        return backtrack(csp, initialAssignment);
+        return backtrack(csp, initialAssignment, inference);
     }
 
-    private static Map<String, Integer> backtrack(Csp csp, Map<String, Integer> assignment) {
+    private static Map<String, Integer> backtrack(Csp csp, Map<String, Integer> assignment, Inference inference) {
         if (assignment.size() == csp.variables.size()) {
             return assignment;
         }
@@ -60,10 +65,10 @@ public class BackTrack {
         for (int value : orderDomainValue(csp, unassignedVar, assignment)) {
             if (csp.isConsistent(unassignedVar, value, assignment)) {
                 assignment.put(unassignedVar, value);
-                var inferences = inference(csp, unassignedVar, assignment);
+                var inferences = inference.inference(csp, unassignedVar, assignment);
                 if (inferences.isPresent()) {
                     assignment.putAll(inferences.get());
-                    var result = backtrack(csp, assignment);
+                    var result = backtrack(csp, assignment, inference);
                     if (result != null) {
                         return result;
                     }
@@ -90,11 +95,6 @@ public class BackTrack {
 
     private static List<Integer> orderDomainValue(Csp csp, String var, Map<String, Integer> assignment) {
         return csp.domains.get(var);
-    }
-
-    private static Optional<Map<String, Integer>> inference(Csp csp, String unassignedVar,
-            Map<String, Integer> assignment) {
-        return Optional.of(new HashMap<>());
     }
 
     private static Csp createSudokuCsp(int[][] board) {
@@ -141,6 +141,17 @@ public class BackTrack {
         boolean sameCol = col1 == col2;
         boolean sameBox = (row1 / 3 == row2 / 3) && (col1 / 3 == col2 / 3);
         return sameRow || sameCol || sameBox;
+    }
+}
+
+interface Inference {
+    public Optional<Map<String, Integer>> inference(Csp csp, String unassignedVar, Map<String, Integer> assignment);
+}
+
+class BacktrackOnlyInference implements Inference {
+    @Override
+    public Optional<Map<String, Integer>> inference(Csp csp, String unassignedVar, Map<String, Integer> assignment) {
+        return Optional.of(new HashMap<>());
     }
 }
 
