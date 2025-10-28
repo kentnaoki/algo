@@ -24,8 +24,29 @@ public class BackTrack {
         return String.join("\n", Arrays.stream(board).map(Arrays::toString).toList());
     }
 
+    private static Map<String, Integer> getInitialAssignment(int[][] board) {
+        Map<String, Integer> assignment = new HashMap<>();
+        for (int r = 0; r < 9; r++) {
+            for (int c = 0; c < 9; c++) {
+                String var = String.valueOf((char) ('A' + r)) + (c + 1);
+                int value = board[r][c];
+                if (value != 0) {
+                    assignment.put(var, value);
+                }
+            }
+        }
+        return assignment;
+    }
+
     private static Map<String, Integer> backtrackSearch(Csp csp) {
-        return backtrack(csp, new HashMap<>());
+        Map<String, Integer> initialAssignment = new HashMap<>();
+        for (String var : csp.variables) {
+            List<Integer> domain = csp.domains.get(var);
+            if (domain.size() == 1) {
+                initialAssignment.put(var, domain.get(0));
+            }
+        }
+        return backtrack(csp, initialAssignment);
     }
 
     private static Map<String, Integer> backtrack(Csp csp, Map<String, Integer> assignment) {
@@ -36,8 +57,6 @@ public class BackTrack {
         var unassignedVar = selectUnassignedVar(csp, assignment)
                 .orElseThrow(() -> new RuntimeException("empty unassignedVar"));
 
-        System.out.println(unassignedVar);
-        System.out.println(assignment);
         for (int value : orderDomainValue(csp, unassignedVar, assignment)) {
             if (csp.isConsistent(unassignedVar, value, assignment)) {
                 assignment.put(unassignedVar, value);
@@ -70,13 +89,12 @@ public class BackTrack {
     }
 
     private static List<Integer> orderDomainValue(Csp csp, String var, Map<String, Integer> assignment) {
-        System.out.println(csp.domains);
         return csp.domains.get(var);
     }
 
     private static Optional<Map<String, Integer>> inference(Csp csp, String unassignedVar,
             Map<String, Integer> assignment) {
-        return Optional.empty();
+        return Optional.of(new HashMap<>());
     }
 
     private static Csp createSudokuCsp(int[][] board) {
