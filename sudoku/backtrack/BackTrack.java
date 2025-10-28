@@ -13,11 +13,18 @@ import sudokuboards.SudokuBoards;
 
 public class BackTrack {
     public static void main(String[] args) {
-        if (!args[0].equals(String.valueOf(1))) {
+        String inferenceType = args[0];
+        if (!inferenceType.equals("1") && !inferenceType.equals("2")) {
             throw new RuntimeException("Invalid inference type");
         }
 
-        Inference inference = new BacktrackOnlyInference();
+        Inference inference;
+        if (inferenceType.equals("1")) {
+            inference = new BacktrackOnlyInference();
+        } else {
+            inference = new ForwardPropagationInference();
+        }
+
         System.out.println("hello");
         int[][] board = SudokuBoards.board1;
         System.out.println(print(board));
@@ -63,6 +70,7 @@ public class BackTrack {
                 .orElseThrow(() -> new RuntimeException("empty unassignedVar"));
 
         for (int value : orderDomainValue(csp, unassignedVar, assignment)) {
+            System.out.println(unassignedVar);
             if (csp.isConsistent(unassignedVar, value, assignment)) {
                 assignment.put(unassignedVar, value);
                 var inferences = inference.inference(csp, unassignedVar, assignment);
@@ -155,6 +163,49 @@ class BacktrackOnlyInference implements Inference {
     }
 }
 
+class ForwardPropagationInference implements Inference {
+    @Override
+    public Optional<Map<String, Integer>> inference(Csp csp, String unassignedVar, Map<String, Integer> assignment) {
+        Map<String, Integer> inferences = new HashMap<>();
+        int assignedValue = assignment.get(unassignedVar);
+
+        Set<String> neighbors = getNeighbors(csp, unassignedVar);
+
+        for (String neighbor : neighbors) {
+            if (assignment.containsKey(neighbor)) {
+                continue;
+            }
+
+            List<Integer> newDomains = new ArrayList<>(csp.domains.get(neighbor));
+            newDomains.remove(Integer.valueOf(assignedValue));
+
+            if (newDomains.isEmpty()) {
+                return Optional.empty();
+            }
+
+            if (newDomains.size() == 1) {
+                inferences.put(neighbor, newDomains.get(0));
+                assignment.put(neighbor, newDomains.get(0));
+            }
+
+            csp.domains.put(neighbor, newDomains);
+        }
+
+        return Optional.of(inferences);
+    }
+
+    private Set<String> getNeighbors(Csp csp, String var) {
+        Set<String> neighbors = new HashSet<>();
+        for (Constraint constraint : csp.constraints.get(var)) {
+            if (constraint instanceof SudokuConstraint sc) {
+                String neighbor = sc.getVar1().equals(var) ? sc.getVar1() : sc.getVar2();
+                neighbors.add(neighbor);
+            }
+        }
+        return neighbors;
+    }
+}
+
 class Csp {
     List<String> variables;
     Map<String, List<Integer>> domains;
@@ -188,6 +239,14 @@ class SudokuConstraint implements Constraint {
     public SudokuConstraint(String var1, String var2) {
         this.var1 = var1;
         this.var2 = var2;
+    }
+
+    public String getVar1() {
+        return var1;
+    }
+
+    public String getVar2() {
+        return var2;
     }
 
     @Override
